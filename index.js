@@ -18,7 +18,7 @@ async function parse() {
 
         const items = response.querySelectorAll(process.argv[4])
         for (const item of items) {
-            if (process.argv.length == 4) {
+            if (process.argv.length == 5) {
                 result.push(`${item.text.trim()}\t${url}`)
             } else {
                 result.push(`${item.attributes[process.argv[5]].trim()}\t${url}`)
