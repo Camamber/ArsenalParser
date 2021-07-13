@@ -16,15 +16,15 @@ async function parse() {
             }
         }).then(body => HTMLParser.parse(body))
 
-        const items = response.querySelectorAll(process.argv[3])
+        const items = response.querySelectorAll(process.argv[4])
         for (const item of items) {
             if (process.argv.length == 4) {
-                result.push(`${item.text.trim()};${url}`)
+                result.push(`${item.text.trim()}\t${url}`)
             } else {
-                result.push(`${item.attributes[process.argv[4]].trim()};${url}`)
+                result.push(`${item.attributes[process.argv[5]].trim()}\t${url}`)
             }
         }
         console.log(url, 'parsed')
     }
-    fs.writeFileSync('result.csv', result.join('\n'), { encoding: 'utf-8' })
+    fs.writeFileSync(process.argv[3], result.join('\n'), { encoding: 'utf-8' })
 }
