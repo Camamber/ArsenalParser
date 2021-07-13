@@ -24,6 +24,7 @@ async function parse() {
                 result.push(`${item.attributes[process.argv[4]].trim()};${url}`)
             }
         }
+        console.log(url, 'parsed')
     }
     fs.writeFileSync('result.csv', result.join('\n'), { encoding: 'utf-8' })
 }
