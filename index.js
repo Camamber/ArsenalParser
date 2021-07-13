@@ -9,6 +9,7 @@ if (process.argv.length > 3) {
 async function parse() {
     const urls = fs.readFileSync(process.argv[2]).toString().split('\n')
     const result = []
+    let index = 0;
     for (const url of urls) {
         const response = await request.get(url.trim(), {
             headers: {
@@ -24,7 +25,7 @@ async function parse() {
                 result.push(`${item.attributes[process.argv[5]].trim()}\t${url}`)
             }
         }
-        console.log(url, 'parsed')
+        console.log(++index, '/', urls.length, url, 'parsed')
     }
     fs.writeFileSync(process.argv[3], result.join('\n'), { encoding: 'utf-8' })
 }
