@@ -25,6 +25,5 @@ async function parse() {
             }
         }
     }
-    fs.writeFileSync('result.csv', result.join('\n'))
+    fs.writeFileSync('result.csv', result.join('\n'), { encoding: 'utf-8' })
 }
-
