@@ -9,35 +9,37 @@ if (process.argv.length > 3) {
 async function parse() {
     const urls = fs.readFileSync(process.argv[2]).toString().split('\n')
     const result = []
-    let index = 0;
-    for (let i = 0; i < urls.length; i += 5) {
-        const chunk = urls.slice(i, i + 5).map(url => url.trim());
+    const info = { length: urls.length, index: 1 };
 
-        const requests = chunk.map(
-            url => request.get(url, { headers: { 'User-Agent': 'LocomotiveBot/1.0' } })
-                .then(body => {
-                    return { url, document: HTMLParser.parse(body) }
-                })
-                .catch(err => {
-                    console.log(url, err)
-                    return null
-                })
-        )
-        const responses = (await Promise.all(requests)).filter(item => !!item)
-
-        for (const { url, document } of responses) {
-            const items = document.querySelectorAll(process.argv[4])
-            for (const item of items) {
-                if (process.argv.length == 5) {
-                    result.push(`${item.text.trim()}\t${url}`)
-                } else {
-                    result.push(`${item.attributes[process.argv[5]].trim()}\t${url}`)
-                }
-            }
-            console.log(++index, '/', urls.length, url.trim(), 'parsed')
-        }
-    }
+    const jobs = new Array(10).fill(1).map(i => worker(urls, info, result))
+    await Promise.all(jobs)
 
     fs.writeFileSync(process.argv[3], result.join('\n'), { encoding: 'utf-8' })
+}
+
+
+async function worker(urls, info, result) {
+    while (urls.length) {
+        const popedUrl = urls.pop();
+        const response = await request.get(popedUrl, { timeout: 10000, headers: { 'User-Agent': 'LocomotiveBot/1.0' } })
+            .then(body => ({ url: popedUrl, document: HTMLParser.parse(body), status: 200 }))
+            .catch(err => ({ url: popedUrl, document: null, status: err.statusCode }))
+
+        const { url, document, status } = response
+        if (status !== 200) {
+            result.push(`${status}\t${url}`)
+            console.log(info.index++, '/', info.length, url.trim(), 'parsed', status)
+            continue
+        }
+        const items = document.querySelectorAll(process.argv[4])
+        for (const item of items) {
+            if (process.argv.length == 5) {
+                result.push(`${item.text.trim()}\t${url}`)
+            } else {
+                result.push(`${item.attributes[process.argv[5]].trim()}\t${url}`)
+            }
+        }
+        console.log(info.index++, '/', info.length, url.trim(), 'parsed', status)
+    }
 }
 
