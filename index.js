@@ -32,6 +32,9 @@ async function worker(urls, info, result) {
             continue
         }
         const items = document.querySelectorAll(process.argv[4])
+        if(!items.length) {
+            result.push(`NO_DATA\t${url}`)
+        }
         for (const item of items) {
             if (process.argv.length == 5) {
                 result.push(`${item.text.trim()}\t${url}`)
